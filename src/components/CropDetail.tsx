@@ -65,6 +65,15 @@ export function CropDetail({
         ))}
       </div>
 
+      <div className="grid gap-1 text-sm">
+        <span>{t.moisture(Math.round(result.moisture * 100))}</span>
+        {result.gaez != null && (
+          <span>
+            {t.gaez(result.gaez)} <span className="text-xs text-muted">· {t.gaezNote}</span>
+          </span>
+        )}
+      </div>
+
       <ul className="grid list-disc gap-1 pl-5 text-sm">
         {result.reasons.map((r) => (
           <li key={r.key}>{reasonText(t, r)}</li>

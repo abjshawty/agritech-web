@@ -185,6 +185,8 @@ export interface operations {
                                 rain: number[];
                                 /** @description Mean temperature per month in °C, January first. */
                                 tmean: number[];
+                                /** @description Root-zone soil wetness per month, 0 (dry) to 1 (saturated), January first. */
+                                wetness: number[];
                                 /** @description Total of `rain`, in mm. */
                                 annualRain: number;
                                 /** @description Months with under 50 mm of rain. */
@@ -208,6 +210,8 @@ export interface operations {
                                 rainPct: number;
                                 /** @description Change in mean temperature, °C. */
                                 tempDelta: number;
+                                /** @description Change in mean root-zone soil wetness (0–1 scale). */
+                                wetnessDelta: number;
                             };
                         };
                         /** @description The planting month used, after applying the default. */
@@ -223,6 +227,10 @@ export interface operations {
                             score: number;
                             /** @enum {string} */
                             verdict: "good" | "possible" | "poor";
+                            /** @description Mean root-zone soil wetness over the crop's months (the growing cycle, or the year for perennials), 0 dry to 1 saturated. Shown, not scored. */
+                            moisture: number;
+                            /** @description FAO GAEZ v4 suitability here (1981–2010, rain-fed, low input), 0–100: an independent second opinion, not part of `score`. Null for crops GAEZ doesn't cover (cashew, rubber). */
+                            gaez: ((number | null) | null) | null;
                             /** @description Rain short of the crop's optimal minimum, in mm; 0 when there is enough. */
                             waterDeficitMm: number;
                             factors: {

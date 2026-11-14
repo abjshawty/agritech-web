@@ -75,6 +75,7 @@ export function Results({
           </div>
           <ScoreBar value={r.score} verdict={r.verdict} />
           {r.reasons[0] && <span className="text-sm text-muted">{reasonText(t, r.reasons[0])}</span>}
+          {r.gaez != null && <span className="text-xs text-muted">{t.gaez(r.gaez)}</span>}
           {r.waterDeficitMm > 0 && !data.irrigated && (
             <span className="text-sm font-semibold text-poor">{t.deficit(r.waterDeficitMm)}</span>
           )}

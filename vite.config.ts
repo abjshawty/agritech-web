@@ -11,6 +11,7 @@ export default defineConfig({
   },
   server: {
     // Same origin as production: the backend runs on :3000 under /api.
-    proxy: { '/api': 'http://localhost:3000' },
+    // Point elsewhere with API_URL, e.g. API_URL=http://localhost:3001 bun dev.
+    proxy: { '/api': process.env.API_URL ?? 'http://localhost:3000' },
   },
 })

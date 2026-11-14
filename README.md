@@ -6,7 +6,7 @@ The API is [`agritech-backend`](https://github.com/abjshawty/agritech-backend).
 
 ## Getting started
 
-You need Bun 1.3.10 or later, and the backend running on port 3000 (see its README). Vite proxies `/api` to it, so the app talks to the same origin in development and in production.
+You need Bun 1.3.10 or later, and the backend running on port 3000 (see its README). Vite proxies `/api` to it, so the app talks to the same origin in development and in production. To use a backend on another port, set `API_URL`, e.g. `API_URL=http://localhost:3001 bun dev`.
 
 ```bash
 bun install
