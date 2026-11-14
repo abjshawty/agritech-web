@@ -1,0 +1,31 @@
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+
+/* Base palette from the design brief: deep green primary, savanna ochre accent, warm off-white. */
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --color-paper: #f7f5ef;
+  --color-ink: #1d2a22;
+  --color-muted: #5e6b61;
+  --color-line: #dcd8cb;
+  --color-leaf: #1f5a3a;
+  --color-leaf-soft: #e3eee6;
+  --color-ochre: #c48a2c;
+  --color-ochre-soft: #f5e8cf;
+  --color-good: #2f7d4b;
+  --color-possible: #c48a2c;
+  --color-poor: #b4533a;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
