@@ -72,6 +72,7 @@ export function CropDetail({
             {t.gaez(result.gaez)} <span className="text-xs text-muted">· {t.gaezNote}</span>
           </span>
         )}
+        {crop && <span className="text-xs text-muted">{t.source(crop.source)}</span>}
       </div>
 
       <ul className="grid list-disc gap-1 pl-5 text-sm">
