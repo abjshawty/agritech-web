@@ -60,7 +60,7 @@ export function SiteSummary({ data }: { data: RecommendResponse }) {
 export function Results({ data, crops, onOpen, backRef }: {
   data: RecommendResponse
   crops: Map<string, Crop>
-  onOpen: (result: Result) => void
+  onOpen: (result: Result, trigger: HTMLButtonElement) => void
   backRef: RefObject<HTMLButtonElement | null>
 }) {
   const { t, lang } = useLang()
@@ -72,10 +72,7 @@ export function Results({ data, crops, onOpen, backRef }: {
         <button
           key={result.cropId}
           type="button"
-          onClick={() => onOpen(result)}
-          onFocus={() => {
-            backRef.current = document.activeElement as HTMLButtonElement
-          }}
+          onClick={(event) => onOpen(result, event.currentTarget)}
           className="grid min-h-12 gap-2 rounded-xl border-2 border-black bg-white p-4 text-left transition-colors hover:bg-leaf-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ochre"
         >
           <span className="flex flex-wrap items-baseline justify-between gap-2">

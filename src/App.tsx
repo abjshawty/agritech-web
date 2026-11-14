@@ -27,7 +27,7 @@ export default function App() {
   const [crops, setCrops] = useState<Map<string, Crop>>(new Map())
   const controllerRef = useRef<AbortController | null>(null)
   const resultsRef = useRef<HTMLElement | null>(null)
-  const backRef = useRef<HTMLButtonElement | null>(null)
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
 
   const currentKey = pin ? pointKey(pin, month, irrigated) : null
   const stale = Boolean(data && analyzedKey && currentKey !== analyzedKey)
@@ -151,7 +151,10 @@ export default function App() {
   return (
     <div className="flex min-h-full flex-col bg-paper text-ink">
       <header className="flex min-h-16 items-center justify-between gap-4 border-b-2 border-line bg-white px-4 py-3 md:px-6">
-        <span className="text-2xl font-extrabold tracking-wide text-leaf">AGRITECH</span>
+        <div>
+          <div className="text-xs font-black uppercase tracking-[0.18em] text-muted">Field Shift</div>
+          <span className="text-2xl font-extrabold tracking-wide text-leaf">AGRITECH</span>
+        </div>
 
         <label className="flex min-h-12 items-center gap-2 text-base font-bold">
           <span>{t.languageLabel}</span>
@@ -181,7 +184,7 @@ export default function App() {
             type="button"
             onClick={locateMe}
             disabled={locating}
-            className="absolute top-3 right-3 z-[1000] min-h-12 rounded-lg border-2 border-black bg-white px-4 text-base font-bold text-black disabled:opacity-70"
+            className="absolute top-3 right-3 z-[1000] min-h-12 rounded-lg border-2 border-black bg-white px-4 text-base font-bold text-black shadow-sm disabled:opacity-70"
           >
             {locating ? t.locating : t.useLocation}
           </button>
@@ -286,12 +289,20 @@ export default function App() {
                   data={data}
                   onBack={() => {
                     setOpen(null)
-                    requestAnimationFrame(() => backRef.current?.focus())
+                    requestAnimationFrame(() => triggerRef.current?.focus())
                   }}
-                  backRef={backRef}
+                  backRef={triggerRef}
                 />
               ) : (
-                <Results data={data} crops={crops} onOpen={setOpen} backRef={backRef} />
+                <Results
+                  data={data}
+                  crops={crops}
+                  onOpen={(result, trigger) => {
+                    setOpen(result)
+                    triggerRef.current = trigger
+                  }}
+                  backRef={triggerRef}
+                />
               ))}
           </section>
         </aside>
