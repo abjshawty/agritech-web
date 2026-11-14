@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import type { Crop, RecommendResponse, Result, Verdict } from '@/api/client'
 import { reasonText, useLang } from '@/i18n'
 
@@ -11,16 +12,16 @@ export function VerdictLabel({ result }: { result: Result }) {
   const { t } = useLang()
   const style = verdictStyle[result.verdict]
   return (
-    <span className={`text-sm font-bold whitespace-nowrap ${style.text}`}>
-      {style.icon} {t.verdict[result.verdict]} · {result.score}
+    <span className={`whitespace-nowrap text-lg font-extrabold ${style.text}`}>
+      {style.icon} {t.verdict[result.verdict]} · {result.score}/100
     </span>
   )
 }
 
 export function ScoreBar({ value, verdict }: { value: number; verdict: Verdict }) {
   return (
-    <div className="h-1.5 overflow-hidden rounded-full bg-line">
-      <div className={`h-full rounded-full ${verdictStyle[verdict].bar}`} style={{ width: `${value}%` }} />
+    <div className="h-5 overflow-hidden rounded-full border-2 border-black bg-white" role="img" aria-label={`${Math.round(value)}%`}>
+      <div className={`h-full ${verdictStyle[verdict].bar}`} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
     </div>
   )
 }
@@ -30,56 +31,70 @@ export function SiteSummary({ data }: { data: RecommendResponse }) {
   const { site } = data
   const rainSign = site.shift.rainPct > 0 ? '+' : ''
   const tempSign = site.shift.tempDelta > 0 ? '+' : ''
+
   return (
-    <div className="grid gap-1 rounded-xl bg-leaf-soft p-3 text-sm">
-      <b>
+    <section aria-label={t.siteSummary} className="grid gap-3 rounded-xl border-2 border-black bg-leaf-soft p-4 text-base">
+      <b className="text-lg">
         {site.nearestTown} · {t.sowing} {t.months[data.plantingMonth - 1]}
       </b>
       <span>
-        {Math.round(site.climate.annualRain)} {t.perYear} · {t.texture[site.soil.texture]} · pH {site.soil.ph}
+        {Math.round(site.climate.annualRain)} {t.perYear} · {t.texture[site.soil.texture]} · pH {site.soil.ph.toFixed(1)}
       </span>
-      <span>
-        <span className="rounded-md bg-ochre-soft px-1.5 py-0.5 text-xs font-bold text-ochre">
+
+      <div className="rounded-lg border-2 border-black bg-ochre-soft p-3">
+        <b className="block text-lg text-possible">{t.fieldShift}</b>
+        <span className="block font-bold">
           {t.rain} {rainSign}
-          {site.shift.rainPct} % · {tempSign}
-          {site.shift.tempDelta} °C {t.since}
+          {Math.round(site.shift.rainPct)}% · {tempSign}
+          {site.shift.tempDelta.toFixed(1)} °C
         </span>
-      </span>
-      {data.source === 'snapshot' && <span className="text-xs text-muted">{t.sample}</span>}
-    </div>
+        <span className="block">{t.fieldShiftHelp}</span>
+      </div>
+
+      {data.source === 'snapshot' && <span className="font-semibold text-muted">{t.sample}</span>}
+      <span className="rounded-md border border-black bg-white px-2 py-1 text-xs font-semibold text-ink">{t.note}</span>
+    </section>
   )
 }
 
-export function Results({
-  data,
-  crops,
-  onOpen,
-}: {
+export function Results({ data, crops, onOpen, backRef }: {
   data: RecommendResponse
   crops: Map<string, Crop>
-  onOpen: (r: Result) => void
+  onOpen: (result: Result) => void
+  backRef: RefObject<HTMLButtonElement | null>
 }) {
   const { t, lang } = useLang()
+
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-3">
       <SiteSummary data={data} />
-      {data.results.map((r) => (
+      {data.results.map((result) => (
         <button
-          key={r.cropId}
-          onClick={() => onOpen(r)}
-          className="grid gap-1.5 rounded-xl border border-line bg-white p-3 text-left hover:border-leaf focus-visible:outline-2 focus-visible:outline-leaf"
+          key={result.cropId}
+          type="button"
+          onClick={() => onOpen(result)}
+          onFocus={() => {
+            backRef.current = document.activeElement as HTMLButtonElement
+          }}
+          className="grid min-h-12 gap-2 rounded-xl border-2 border-black bg-white p-4 text-left transition-colors hover:bg-leaf-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ochre"
         >
-          <div className="flex items-baseline justify-between gap-2">
-            <b>{crops.get(r.cropId)?.name[lang] ?? r.cropId}</b>
-            <VerdictLabel result={r} />
-          </div>
-          <ScoreBar value={r.score} verdict={r.verdict} />
-          {r.reasons[0] && <span className="text-sm text-muted">{reasonText(t, r.reasons[0])}</span>}
-          {r.waterDeficitMm > 0 && !data.irrigated && (
-            <span className="text-sm font-semibold text-poor">{t.deficit(r.waterDeficitMm)}</span>
+          <span className="flex flex-wrap items-baseline justify-between gap-2">
+            <b className="text-xl font-extrabold">{crops.get(result.cropId)?.name[lang] ?? result.cropId}</b>
+            <VerdictLabel result={result} />
+          </span>
+
+          <span className="grid grid-cols-[1fr_auto] items-center gap-3">
+            <ScoreBar value={result.score} verdict={result.verdict} />
+            <strong className="text-lg tabular-nums">{result.score}/100</strong>
+          </span>
+
+          {result.reasons[0] && <span className="text-base text-muted">{reasonText(t, result.reasons[0])}</span>}
+          {result.waterDeficitMm > 0 && !data.irrigated && (
+            <span className="text-base font-bold text-poor">{t.deficit(Math.round(result.waterDeficitMm))}</span>
           )}
         </button>
       ))}
     </div>
   )
 }
+

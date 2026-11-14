@@ -9,25 +9,27 @@ const maxBounds: [[number, number], [number, number]] = [
   [bounds.lat[1], bounds.lon[1]],
 ]
 
-function ClickToPin({ onPick }: { onPick: (p: Point) => void }) {
+function ClickToPin({ onPick }: { onPick: (point: Point) => void }) {
   useMapEvents({
-    click: (e) => {
-      if (inBounds(e.latlng.lat, e.latlng.lng)) onPick({ lat: e.latlng.lat, lon: e.latlng.lng })
+    click: (event) => {
+      if (inBounds(event.latlng.lat, event.latlng.lng)) onPick({ lat: event.latlng.lat, lon: event.latlng.lng })
     },
   })
+
   return null
 }
 
-// Pan to the pin when it's set from outside the map (town list, GPS).
 function FollowPin({ pin }: { pin: Point | null }) {
   const map = useMap()
+
   useEffect(() => {
     if (pin) map.panTo([pin.lat, pin.lon])
   }, [map, pin])
+
   return null
 }
 
-export function FieldMap({ pin, onPick }: { pin: Point | null; onPick: (p: Point) => void }) {
+export function FieldMap({ pin, onPick }: { pin: Point | null; onPick: (point: Point) => void }) {
   return (
     <MapContainer
       bounds={maxBounds}
@@ -40,15 +42,18 @@ export function FieldMap({ pin, onPick }: { pin: Point | null; onPick: (p: Point
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+
       <ClickToPin onPick={onPick} />
       <FollowPin pin={pin} />
+
       {pin && (
         <CircleMarker
           center={[pin.lat, pin.lon]}
           radius={10}
-          pathOptions={{ color: '#ffffff', weight: 3, fillColor: '#b4533a', fillOpacity: 1 }}
+          pathOptions={{ color: '#000000', weight: 3, fillColor: '#9a3b00', fillOpacity: 1 }}
         />
       )}
     </MapContainer>
   )
 }
+
