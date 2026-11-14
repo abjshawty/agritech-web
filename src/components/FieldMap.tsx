@@ -1,5 +1,5 @@
+import { useEffect, useRef } from 'react'
 import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
-import { useEffect } from 'react'
 import { bounds, inBounds } from '@/towns'
 
 type Point = { lat: number; lon: number }
@@ -29,6 +29,31 @@ function FollowPin({ pin }: { pin: Point | null }) {
   return null
 }
 
+function RefreshMapSize() {
+  const map = useMap()
+
+  useEffect(() => {
+    const container = map.getContainer()
+    let frame = 0
+    const invalidate = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => map.invalidateSize({ pan: false }))
+    }
+    const observer = new ResizeObserver(invalidate)
+    observer.observe(container)
+    invalidate()
+    window.addEventListener('resize', invalidate)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', invalidate)
+      cancelAnimationFrame(frame)
+    }
+  }, [map])
+
+  return null
+}
+
 export function FieldMap({ pin, onPick }: { pin: Point | null; onPick: (point: Point) => void }) {
   return (
     <MapContainer
@@ -42,10 +67,9 @@ export function FieldMap({ pin, onPick }: { pin: Point | null; onPick: (point: P
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-
       <ClickToPin onPick={onPick} />
       <FollowPin pin={pin} />
-
+      <RefreshMapSize />
       {pin && (
         <CircleMarker
           center={[pin.lat, pin.lon]}
@@ -56,4 +80,3 @@ export function FieldMap({ pin, onPick }: { pin: Point | null; onPick: (point: P
     </MapContainer>
   )
 }
-
