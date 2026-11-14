@@ -52,14 +52,14 @@ export default function App() {
     setLoading(true)
     setError(null)
     setOpen(null)
-    const { data, error } = await getRecommend({
+    const { data, error, response } = await getRecommend({
       lat: at.lat,
       lon: at.lon,
       irrigated,
       ...(month ? { plantingMonth: month } : {}),
     })
     setLoading(false)
-    if (error || !data) setError(t.unavailable)
+    if (error || !data) setError(response.status === 400 ? t.noSoil : t.unavailable)
     else setData(data)
   }
 

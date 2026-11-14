@@ -26,7 +26,8 @@ const dict = {
     cycle: 'Cycle de culture',
     unavailable: 'Le service de données est indisponible. Réessayez dans un instant.',
     outside: 'Choisissez un point en Côte d’Ivoire.',
-    sample: 'Données d’exemple (Bouaké)',
+    sample: 'NASA POWER est injoignable : climat enregistré de la ville la plus proche',
+    noSoil: 'Pas de données de sol ici. Choisissez un point sur la terre ferme.',
     factor: { rain: 'Pluie', temp: 'Température', ph: 'pH', texture: 'Texture', dryMonths: 'Mois secs' },
     verdict: { good: 'Bon', possible: 'Possible', poor: 'Faible' } satisfies Record<Verdict, string>,
     texture: {
@@ -76,7 +77,8 @@ const dict = {
     cycle: 'Growing cycle',
     unavailable: 'The data service is unavailable. Try again in a moment.',
     outside: 'Pick a point in Côte d’Ivoire.',
-    sample: 'Sample data (Bouaké)',
+    sample: 'NASA POWER is unreachable: showing the nearest town’s saved climate',
+    noSoil: 'No soil data here. Pick a point on land.',
     factor: { rain: 'Rain', temp: 'Temperature', ph: 'pH', texture: 'Texture', dryMonths: 'Dry months' },
     verdict: { good: 'Good', possible: 'Possible', poor: 'Poor' } satisfies Record<Verdict, string>,
     texture: {

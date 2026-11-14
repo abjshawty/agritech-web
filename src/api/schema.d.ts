@@ -33,7 +33,7 @@ export interface paths {
         };
         /**
          * Recommend crops for a location
-         * @description Scores every crop profile against the site's climate and soil and returns them highest score first, each with a verdict (good ≥70, possible 40–69, poor <40), its factor scores and translation keys for the reasons. A `lat` or `lon` outside Côte d'Ivoire, or a `plantingMonth` outside 1–12, is a 422. **Currently a mock:** every location gets the same Bouaké sample site, with `source: "snapshot"`; the scoring itself is real.
+         * @description Scores every crop profile against the site's climate (NASA POWER, 2014–2023 monthly averages, compared with 1984–1993) and topsoil (SoilGrids, 0–30 cm) and returns them highest score first, each with a verdict (good ≥70, possible 40–69, poor <40), its factor scores and translation keys for the reasons. A `lat` or `lon` outside Côte d'Ivoire, or a `plantingMonth` outside 1–12, is a 422. A point with no mapped soil within about 15 km, such as the sea, is a 400. Climate is cached per 0.1° cell; when NASA POWER fails or takes over 8 s, a point within 25 km of a demo town (Abidjan, Bouaké, Korhogo, San-Pédro, Man) gets that town's saved climate with `source: "snapshot"`, and anywhere else is a 503.
          */
         get: operations["getApiRecommend"];
         put?: never;
@@ -251,6 +251,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Response for status 400 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": "There is no soil data at this point. Pick a point on land.";
+                };
+            };
             /** @description Response for status 500 */
             500: {
                 headers: {
@@ -263,6 +272,15 @@ export interface operations {
                         /** @description Opaque reference for this occurrence. Quote it to support; the detail is in the server log, never in this body. */
                         error: string;
                     };
+                };
+            };
+            /** @description Response for status 503 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": "NASA POWER climate data is unavailable right now. Try again in a moment.";
                 };
             };
         };
