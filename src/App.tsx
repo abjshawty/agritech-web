@@ -3,6 +3,7 @@ import { getCrops, getRecommend, type Crop, type RecommendResponse, type Result 
 import { CropDetail } from '@/components/CropDetail'
 import { FieldMap } from '@/components/FieldMap'
 import { Results } from '@/components/Results'
+import { UserPage, loadUserProfile, type UserProfileData } from '@/components/UserPage'
 import { useLang } from '@/i18n'
 import { inBounds, towns } from '@/towns'
 
@@ -14,6 +15,8 @@ const pointKey = (point: Point, month: number | null, irrigated: boolean) =>
 
 export default function App() {
   const { t, lang, setLang } = useLang()
+  const [page, setPage] = useState<'map' | 'profile'>('map')
+  const [profile, setProfile] = useState<UserProfileData>(loadUserProfile)
   const [pin, setPin] = useState<Point | null>(null)
   const [month, setMonth] = useState<number | null>(null)
   const [irrigated, setIrrigated] = useState(false)
@@ -138,6 +141,16 @@ export default function App() {
     )
   }
 
+  function saveProfile(nextProfile: UserProfileData) {
+    setProfile(nextProfile)
+    try {
+      localStorage.setItem('agritech-profile', JSON.stringify(nextProfile))
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const errorText: Record<ErrorKey, string> = {
     outside: t.outside,
     noSoil: t.noSoil,
@@ -150,11 +163,33 @@ export default function App() {
 
   return (
     <div className="flex min-h-full flex-col bg-paper text-ink">
-      <header className="flex min-h-16 items-center justify-between gap-4 border-b-2 border-line bg-white px-4 py-3 md:px-6">
-        <div>
+      <header className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b-2 border-line bg-white px-4 py-3 md:px-6">
+        <button type="button" onClick={() => setPage('map')} aria-label={t.mapPage} className="text-left">
           <div className="text-xs font-black uppercase tracking-[0.18em] text-muted">Field Shift</div>
           <span className="text-2xl font-extrabold tracking-wide text-leaf">AGRITECH</span>
-        </div>
+        </button>
+
+        <nav aria-label={t.mainNavigation} className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPage('map')}
+            aria-current={page === 'map' ? 'page' : undefined}
+            className={`min-h-12 rounded-lg border-2 px-3 text-base font-bold transition-colors ${page === 'map' ? 'border-black bg-leaf-soft text-leaf' : 'border-transparent bg-white hover:border-black'}`}
+          >
+            {t.mapPage}
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage('profile')}
+            aria-current={page === 'profile' ? 'page' : undefined}
+            className={`flex min-h-12 items-center gap-2 rounded-lg border-2 px-3 text-base font-bold transition-colors ${page === 'profile' ? 'border-black bg-leaf-soft text-leaf' : 'border-transparent bg-white hover:border-black'}`}
+          >
+            <span aria-hidden="true" className="grid size-8 place-items-center rounded-full border-2 border-black bg-ochre-soft text-sm font-extrabold text-ink">
+              {profile.name.trim() ? profile.name.trim().slice(0, 1).toLocaleUpperCase(lang) : 'A'}
+            </span>
+            <span>{t.userPage}</span>
+          </button>
+        </nav>
 
         <label className="flex min-h-12 items-center gap-2 text-base font-bold">
           <span>{t.languageLabel}</span>
@@ -170,119 +205,81 @@ export default function App() {
         </label>
       </header>
 
-      <main className="grid min-h-0 flex-1 grid-rows-[40vh_1fr] md:grid-cols-[3fr_2fr] md:grid-rows-1">
-        <section className="relative min-h-[280px]" aria-label={t.mapLabel}>
-          <FieldMap
-            pin={pin}
-            onPick={(point) => {
-              setPin(point)
-              setError(null)
-            }}
-          />
-
-          <button
-            type="button"
-            onClick={locateMe}
-            disabled={locating}
-            className="absolute top-3 right-3 z-[1000] min-h-12 rounded-lg border-2 border-black bg-white px-4 text-base font-bold text-black shadow-sm disabled:opacity-70"
-          >
-            {locating ? t.locating : t.useLocation}
-          </button>
-        </section>
-
-        <aside className="grid min-h-0 content-start gap-4 overflow-y-auto border-line bg-white p-4 md:border-l-2 md:p-5">
-          <div className="grid gap-3">
-            <label className="grid gap-1 text-base font-bold">
-              <span>{t.town}</span>
-              <select
-                id="town"
-                value={town?.name ?? ''}
-                onChange={(event) => {
-                  const selectedTown = towns.find((item) => item.name === event.target.value)
-                  if (selectedTown) {
-                    setPin({ lat: selectedTown.lat, lon: selectedTown.lon })
-                    setError(null)
-                  }
-                }}
-                className="min-h-12 rounded-lg border-2 border-black bg-white px-3"
-              >
-                <option value="">{t.chooseTown}</option>
-                {towns.map((item) => (
-                  <option key={item.name} value={item.name}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="grid gap-1 text-base font-bold">
-              <span>{t.plantingMonth}</span>
-              <select
-                id="month"
-                value={month ?? ''}
-                onChange={(event) => setMonth(event.target.value ? Number(event.target.value) : null)}
-                className="min-h-12 rounded-lg border-2 border-black bg-white px-3"
-              >
-                <option value="">{t.auto}</option>
-                {t.months.map((name, index) => (
-                  <option key={name} value={index + 1}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="flex min-h-12 items-center justify-between gap-3 rounded-lg border-2 border-black bg-white px-3 text-base font-bold">
-              <span>{t.irrigation}</span>
-              <input
-                id="irrigated"
-                type="checkbox"
-                checked={irrigated}
-                onChange={(event) => setIrrigated(event.target.checked)}
-                className="size-6 accent-leaf"
-              />
-            </label>
-
+      {page === 'profile' ? (
+        <UserPage lang={lang} text={t} profile={profile} onBack={() => setPage('map')} onSave={saveProfile} />
+      ) : (
+        <main className="grid min-h-0 flex-1 grid-rows-[40vh_1fr] md:grid-cols-[3fr_2fr] md:grid-rows-1">
+          <section className="relative min-h-[280px]" aria-label={t.mapLabel}>
+            <FieldMap
+              pin={pin}
+              onPick={(point) => {
+                setPin(point)
+                setError(null)
+              }}
+            />
             <button
               type="button"
-              onClick={() => void analyze()}
-              disabled={!pin || loading}
-              className="min-h-14 w-full rounded-lg border-2 border-black bg-leaf px-4 py-3 text-lg font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={locateMe}
+              disabled={locating}
+              className="absolute top-3 right-3 z-[1000] min-h-12 rounded-lg border-2 border-black bg-white px-4 text-base font-bold text-black shadow-sm disabled:opacity-70"
             >
-              {loading ? t.analyzing : t.analyze}
+              {locating ? t.locating : t.useLocation}
             </button>
+          </section>
 
-            {!pin && <p className="text-base text-muted">{t.pickHint}</p>}
-            {error && (
-              <p role="alert" className="rounded-lg border-2 border-black bg-white p-3 text-base font-bold text-poor">
-                ⚠ {errorText[error]}
-              </p>
-            )}
-            {cropsError && (
-              <p role="alert" className="rounded-lg border-2 border-black bg-white p-3 text-base font-bold text-poor">
-                ⚠ {t.cropsUnavailable}
-              </p>
-            )}
-            {loading && (
-              <p role="status" aria-live="polite" className="text-base font-bold">
-                {t.analyzing}
-              </p>
-            )}
-          </div>
+          <aside className="grid min-h-0 content-start gap-4 overflow-y-auto border-line bg-white p-4 md:border-l-2 md:p-5">
+            <div className="grid gap-3">
+              <label className="grid gap-1 text-base font-bold">
+                <span>{t.town}</span>
+                <select
+                  id="town"
+                  value={town?.name ?? ''}
+                  onChange={(event) => {
+                    const selectedTown = towns.find((item) => item.name === event.target.value)
+                    if (selectedTown) {
+                      setPin({ lat: selectedTown.lat, lon: selectedTown.lon })
+                      setError(null)
+                    }
+                  }}
+                  className="min-h-12 rounded-lg border-2 border-black bg-white px-3"
+                >
+                  <option value="">{t.chooseTown}</option>
+                  {towns.map((item) => <option key={item.name} value={item.name}>{item.name}</option>)}
+                </select>
+              </label>
 
-          <section ref={resultsRef} tabIndex={-1} aria-labelledby="results-heading" className="scroll-mt-4 outline-none">
-            <h1 id="results-heading" className="mb-3 text-2xl font-extrabold text-leaf">
-              {t.results}
-            </h1>
+              <label className="grid gap-1 text-base font-bold">
+                <span>{t.plantingMonth}</span>
+                <select
+                  id="month"
+                  value={month ?? ''}
+                  onChange={(event) => setMonth(event.target.value ? Number(event.target.value) : null)}
+                  className="min-h-12 rounded-lg border-2 border-black bg-white px-3"
+                >
+                  <option value="">{t.auto}</option>
+                  {t.months.map((name, index) => <option key={name} value={index + 1}>{name}</option>)}
+                </select>
+              </label>
 
-            {stale && (
-              <p role="status" className="mb-3 rounded-lg border-2 border-black bg-ochre-soft p-3 text-base font-bold">
-                {t.changed}
-              </p>
-            )}
+              <label className="flex min-h-12 items-center justify-between gap-3 rounded-lg border-2 border-black bg-white px-3 text-base font-bold">
+                <span>{t.irrigation}</span>
+                <input id="irrigated" type="checkbox" checked={irrigated} onChange={(event) => setIrrigated(event.target.checked)} className="size-6 accent-leaf" />
+              </label>
 
-            {data && !stale &&
-              (open ? (
+              <button type="button" onClick={() => void analyze()} disabled={!pin || loading} className="min-h-14 w-full rounded-lg border-2 border-black bg-leaf px-4 py-3 text-lg font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-60">
+                {loading ? t.analyzing : t.analyze}
+              </button>
+
+              {!pin && <p className="text-base text-muted">{t.pickHint}</p>}
+              {error && <p role="alert" className="rounded-lg border-2 border-black bg-white p-3 text-base font-bold text-poor">⚠ {errorText[error]}</p>}
+              {cropsError && <p role="alert" className="rounded-lg border-2 border-black bg-white p-3 text-base font-bold text-poor">⚠ {t.cropsUnavailable}</p>}
+              {loading && <p role="status" aria-live="polite" className="text-base font-bold">{t.analyzing}</p>}
+            </div>
+
+            <section ref={resultsRef} tabIndex={-1} aria-labelledby="results-heading" className="scroll-mt-4 outline-none">
+              <h1 id="results-heading" className="mb-3 text-2xl font-extrabold text-leaf">{t.results}</h1>
+              {stale && <p role="status" className="mb-3 rounded-lg border-2 border-black bg-ochre-soft p-3 text-base font-bold">{t.changed}</p>}
+              {data && !stale && (open ? (
                 <CropDetail
                   result={open}
                   crop={crops.get(open.cropId)}
@@ -298,16 +295,16 @@ export default function App() {
                   data={data}
                   crops={crops}
                   onOpen={(result, trigger) => {
-                    setOpen(result)
                     triggerRef.current = trigger
+                    setOpen(result)
                   }}
                   backRef={triggerRef}
                 />
               ))}
-          </section>
-        </aside>
-      </main>
+            </section>
+          </aside>
+        </main>
+      )}
     </div>
   )
 }
-
