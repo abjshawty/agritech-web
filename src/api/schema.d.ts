@@ -135,6 +135,8 @@ export interface operations {
                         };
                         /** @description Soil textures the crop is suited to. */
                         textures: ("sand" | "sandy_loam" | "loam" | "clay_loam" | "clay")[];
+                        /** @description Where the ranges come from, e.g. `FAO ECOCROP: Zea mays ssp. mays`. */
+                        source: string;
                     }[];
                 };
             };
