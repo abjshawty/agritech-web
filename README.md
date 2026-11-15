@@ -50,6 +50,17 @@ WEB_PORT=8080 docker compose up -d --build
 
 Only the web container publishes a port.
 
+### Railway
+
+Deploy each repo as its own service. Then set these variables:
+
+| Service | Variable | Value |
+| --- | --- | --- |
+| backend | `PORT` | `3000` |
+| web | `API_UPSTREAM` | `<backend service>.railway.internal:3000` (the backend's private domain, from its Settings → Networking) |
+
+Give only the web service a public domain; the backend needs none.
+
 ## License
 
 MIT
