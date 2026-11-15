@@ -42,6 +42,8 @@ Vite, React 19, TypeScript, Tailwind CSS 4, react-leaflet with OpenStreetMap til
 
 ## Deployment
 
+For a full VPS setup (Docker install, firewall, HTTPS, updates, troubleshooting), see [DEPLOY.md](DEPLOY.md).
+
 `Dockerfile` builds the app and serves it with Caddy, which also proxies `/api/*` to the backend on the internal network. `docker-compose.yml` runs both. Clone `agritech-backend` next to this repo, then:
 
 ```bash
