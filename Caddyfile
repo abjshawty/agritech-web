@@ -1,8 +1,11 @@
-:80 {
+# PORT and API_UPSTREAM default to the docker compose setup.
+# On Railway, set API_UPSTREAM to the backend's private address,
+# e.g. agritech-backend.railway.internal:3000.
+:{$PORT:80} {
 	encode gzip
-	# The backend is only reachable on the internal compose network.
+	# The backend is only reachable on the private network.
 	handle /api/* {
-		reverse_proxy backend:3000
+		reverse_proxy {$API_UPSTREAM:backend:3000}
 	}
 	handle {
 		root * /srv
